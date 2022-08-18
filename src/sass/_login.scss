@@ -1,0 +1,119 @@
+@use 'base' as *;
+@use 'functions' as *;
+
+@keyframes hide {
+  0% {
+    opacity: 1;
+  }
+  99.9% {
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.section-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #ebedf0;
+  z-index: 1000;
+
+  &.hide {
+    animation: hide 0.65s ease-in-out forwards;
+  }
+}
+
+.login {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: rem(400);
+  height: rem(380);
+  padding: rem(48) rem(44);
+  border-radius: rem(18);
+  background-color: #ffffff;
+  box-shadow: 0 0 rem(30) #c2c2c249;
+
+  &__message {
+    margin-bottom: rem(37);
+    font-size: rem(26);
+    color: #27272b;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 100;
+
+    &:not(:last-of-type) {
+      margin-bottom: rem(12);
+    }
+
+    &.isWrong {
+      .login__input {
+        border: 1px solid #ed6666;
+      }
+      .login__error {
+        transform: translate(5px, 0px);
+        opacity: 1;
+      }
+    }
+  }
+
+  &__input {
+    position: relative;
+    width: 100%;
+    padding: rem(12) rem(16);
+    font-size: rem(14);
+    border-radius: rem(15);
+    border: 1px solid transparent;
+    color: #171719;
+    background-color: #f2f4f695;
+    z-index: 99;
+    transition: all 0.4s;
+
+    &::placeholder {
+      font-size: rem(14);
+      color: #b1b6bc;
+    }
+
+    &:focus {
+      box-shadow: 0 0 rem(7) #f2f4f6d9;
+      background-color: #ffffff;
+      border: 1px solid #f2f4f6d9;
+    }
+  }
+
+  &__error {
+    transform: translate(5px, -30px);
+    width: 100%;
+    height: fit-content;
+    font-size: rem(12);
+    color: #ed6666;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 10;
+    transition: all 0.4s ease;
+  }
+
+  &__btn {
+    margin-top: rem(26);
+    padding: rem(12) rem(16);
+    color: #b1b6bc;
+    border-radius: rem(15);
+    background-color: #171719;
+    cursor: pointer;
+  }
+}

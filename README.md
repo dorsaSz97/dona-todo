@@ -1,4 +1,4 @@
-# To-do App
+# To-do App (not responsive)
 
 This is a to-do app, coded with JavaScript.
 

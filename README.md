@@ -4,9 +4,9 @@ This is a to-do app, coded with JavaScript.
 
 You can sign in using:
 
-username:dsz
+username: dsz
 
-pass:1111
+password: 1111
 
 ## Screenshot
 

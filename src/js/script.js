@@ -3,7 +3,7 @@
 // First we have a sign up form which only has one input field for the user to enter their full name. Then using the name, we create a username with the initials and a random 4 digit number as the password. Afterwards we email them these information so they can sign in.
 // Now we imagine these are the data in the database
 // *******************************
-
+// TODO: local storage
 // /////////////////////////////////////////////////
 // Selectors
 // /////////////////////////////////////////////////
@@ -29,70 +29,42 @@ const btnMoreOptions = document.querySelector('.task__more');
 const containerOptions = document.querySelector('.task__options');
 const btnAddTask = document.querySelector('.tasks__btn--add');
 const inputTask = document.querySelector('.tasks__input');
-const containerInputTask = document.querySelector('.tasks__input-container');
 
 let currentUser;
 let currentList = 'All';
+let currentListIndex = 0;
 
 // /////////////////////////////////////////////////
 // User Data
 // /////////////////////////////////////////////////
+// TODO: Sign up new users from the app
 const user1 = {
   fullName: 'Dorsa Safari Zadeh',
   lists: [
     {
       listName: 'All',
-      tasks: new Map([]),
+      tasks: [],
     },
   ],
   pin: 1111,
+  username: '',
 };
-
-const user2 = {
-  fullName: 'Mahta Jannatifar',
-  lists: [
-    {
-      listName: 'All',
-      tasks: new Map([]),
-    },
-  ],
-  pin: 1234,
-};
-
-const user3 = {
-  fullName: 'Ali Moghaddam',
-  lists: [
-    {
-      listName: 'All',
-      tasks: new Map([]),
-    },
-  ],
-  pin: 3333,
-};
-
-const user4 = {
-  fullName: 'Kamyab Geranmayeh',
-  lists: [
-    {
-      listName: 'All',
-      tasks: new Map([]),
-    },
-  ],
-  pin: 9102,
-};
-
-const users = [user1, user2, user3, user4];
+const users = [user1];
 
 // Creating username for each user, depending on their fullname's initials
 const createUsernames = function (users) {
-  users.forEach(
-    user =>
-      (user.username = user.fullName
-        .toLowerCase()
-        .split(' ')
-        .map(name => name[0])
-        .join(''))
-  );
+  users.forEach(user => {
+    user.username = user.fullName
+      .toLowerCase()
+      .split(' ')
+      .map(name => name[0])
+      .join('');
+
+    // new Date() * 1000;
+
+    // TODO: show this to the user to let them know their username
+    // console.log(user.username);
+  });
 };
 createUsernames(users);
 
@@ -103,7 +75,7 @@ btnLogin.addEventListener('click', e => {
   // Prevent form from submitting and page from reloading
   e.preventDefault();
 
-  // Restart inputs errors befor the next click checking happens
+  // Restart inputs errors before the next click checking happens
   fieldUsername.classList.remove('isWrong');
   fieldPIN.classList.remove('isWrong');
   errorUsername.innerText = '';
@@ -116,11 +88,11 @@ btnLogin.addEventListener('click', e => {
       errorUsername.innerText = 'Username field is required';
       fieldPIN.classList.add('isWrong');
       errorPIN.innerText = 'PIN field is required';
-    } else if (inputUsername.value !== '' && inputPIN.value === '') {
+    } else if (inputPIN.value === '') {
       // PIN input empty
       fieldPIN.classList.add('isWrong');
       errorPIN.innerText = 'PIN field is required';
-    } else if (inputUsername.value === '' && inputPIN.value !== '') {
+    } else if (inputUsername.value === '') {
       // username input empty
       fieldUsername.classList.add('isWrong');
       errorUsername.innerText = 'Username field is required';
@@ -149,30 +121,31 @@ btnLogin.addEventListener('click', e => {
 });
 
 /////////////////////////////////////////////////
-// UPDATE UI DONE
+// UPDATE UI
 /////////////////////////////////////////////////
-const createNewTaskHTML = function (user, isChecked, task) {
+const createNewTaskHTML = function (task) {
   // Create task HTML
   const taskItemHTML = `<li class="task" style="${
-    isChecked
-      ? 'text-decoration-color:black'
+    task.isChecked
+      ? 'text-decoration-color: black'
       : 'text-decoration-color: transparent'
   }">
-  <span data-checks='0' class="task__checkbox ${
-    isChecked ? 'checked' : ''
-  }"></span>${task}
+  <span data-checked=${task.isChecked} class="task__checkbox ${
+    task.isChecked ? 'checked' : ''
+  }"></span>
+  <p>${task.value}</p>
   <button class="task__more">
-    :
+      :
     <ul class="task__options">
       <li class="task__btn--delete">Delete</li>
     </ul>
   </button>
 </li>`;
 
-  // Add task html to the tasks container
+  // Add task HTML to the tasks container
   containerTasks.insertAdjacentHTML('afterbegin', taskItemHTML);
 };
-const displayHeaderText = function (user) {
+const displayHeaderText = function () {
   // configurations object
   const options = {
     month: 'long',
@@ -203,7 +176,7 @@ const displayHeaderText = function (user) {
   }
 
   // 2) name
-  const firstName = user.fullName.split(' ')[0];
+  const firstName = currentUser.fullName.split(' ')[0];
   labelWelcomeMessage.textContent = `Good${daylight}, ${firstName}`;
 
   // 3) date
@@ -211,65 +184,67 @@ const displayHeaderText = function (user) {
     month.length > 5 ? month.slice(0, 3) : month
   } ${day} `;
 };
-const displayLists = function (user) {
-  user.lists.forEach(list => {
-    // All list is the default list and already exists in the HTML
+const displayLists = function () {
+  currentUser.lists.forEach(list => {
+    // 'All' list is the default list and already exists in the HTML
     if (list.listName !== 'All') {
-      const listItemHTML = `<li class="list">${list.listName}<button class="list__btn--trash">╳</button></li>`;
-      containerLists.insertAdjacentHTML('beforeend', listItemHTML);
+      const listHTML = `<li class="list">${list.listName}<button class="list__btn--trash">╳</button></li>`;
+      containerLists.insertAdjacentHTML('beforeend', listHTML);
     }
   });
 };
-const displayTasks = function (user, currentList = 'All') {
+const displayTasks = function (currentList = 'All') {
   // Remove all the prev tasks when we want to update the new clicked list
   containerTasks.innerHTML = '';
 
   // The All list needs to show all the tasks in every list the user has
   if (currentList !== 'All') {
-    const currListIndex = user.lists.findIndex(
+    const currListIndex = currentUser.lists.findIndex(
       list => list.listName === currentList
     );
-    user.lists[currListIndex].tasks.forEach((isChecked, task) => {
-      createNewTaskHTML(user, isChecked, task);
+    currentUser.lists[currListIndex].tasks.forEach(task => {
+      createNewTaskHTML({ isChecked: task.isChecked, value: task.value });
     });
   } else {
-    user.lists.forEach(list => {
-      list.tasks.forEach((isChecked, task) => {
-        createNewTaskHTML(user, isChecked, task);
-      });
-    });
+    currentUser.lists.forEach(list =>
+      list.tasks.forEach(task => {
+        createNewTaskHTML({ isChecked: task.isChecked, value: task.value });
+      })
+    );
   }
 
-  if (document.querySelector('.list').textContent === 'All') {
-    document.querySelector('.list').style.backgroundColor = '#e4e4ea6d';
-  }
+  document.querySelectorAll('.list').forEach((list, i) => {
+    if (i === currentListIndex) {
+      list.style.backgroundColor = '#e4e4ea6d';
+    }
+  });
 };
 
 function updateUI(user) {
-  displayHeaderText(user);
-  displayLists(user);
-  displayTasks(user);
+  displayHeaderText();
+  displayLists();
+  displayTasks();
 }
 
 /////////////////////////////////////////////////
-// LIST ADDING/DELETING DONE
+// ADDING + DELETING LIST DONE
 /////////////////////////////////////////////////
-let isEditDone = true;
-let listNew;
+let newList;
+let isCreating = true;
+
 btnAddList.addEventListener('click', () => {
   // Check if we are in the middle of creating a new list
-  if (isEditDone) {
-    listNew = document.createElement('li');
+  if (isCreating) {
+    newList = document.createElement('li');
+    newList.classList.add('list');
+    newList.setAttribute('contenteditable', true);
 
-    containerLists.appendChild(listNew);
+    containerLists.appendChild(newList);
 
-    listNew.classList.add('list');
-    listNew.setAttribute('contenteditable', true);
-    listNew.focus();
-
-    isEditDone = false;
+    newList.focus();
+    isCreating = false;
   } else {
-    listNew.focus();
+    newList.focus();
   }
 });
 
@@ -281,18 +256,16 @@ containerLists.addEventListener('keydown', e => {
 
       if (e.target.textContent === '') {
         e.target.remove();
-        isEditDone = true;
+        isCreating = true;
       } else {
         // Create new list object to add to the currenUsers lists array
-        const list = new Object();
-        list.listName = listNew.innerText;
-        list.tasks = new Map();
+        const list = { listName: newList.innerText, tasks: [] };
 
         currentUser.lists.push(list);
         const btnDelList = `<button class="list__btn--trash">╳</button>`;
-        listNew.insertAdjacentHTML('beforeend', btnDelList);
+        newList.insertAdjacentHTML('beforeend', btnDelList);
         e.target.setAttribute('contenteditable', false);
-        isEditDone = true;
+        isCreating = true;
       }
     }
   }
@@ -319,13 +292,17 @@ containerLists.addEventListener('click', e => {
     // Delete the list object from the currenUsers lists array
     currentUser.lists.splice(currListIndex, 1);
 
-    displayTasks(currentUser, 'All');
-    btnCompleted.style.backgroundColor = 'transparent';
-    sortClicked = false;
+    displayTasks();
+    // btnHideCompleted.style.backgroundColor = 'transparent';
+    // btnMoreClicked = false;
   }
 
   // clicking on a list name
   if (e.target.classList.contains('list')) {
+    console.log(e.target.innerText.split('\n')[0]);
+    currentListIndex = currentUser.lists.findIndex(
+      list => list.listName === e.target.innerText.split('\n')[0]
+    );
     if (!e.target.textContent.includes('All')) {
       const textListLength = e.target.textContent.length;
       const textList = e.target.textContent
@@ -337,140 +314,141 @@ containerLists.addEventListener('click', e => {
       currentList = 'All';
     }
     // adding new ones
-    displayTasks(currentUser, currentList);
-    btnCompleted.style.backgroundColor = 'transparent';
-    sortClicked = false;
-    document
-      .querySelectorAll('.list')
-      .forEach(list => (list.style.backgroundColor = 'transparent'));
-    e.target.style.backgroundColor = '#e4e4ea6d';
+    displayTasks(currentList);
+    // btnCompleted.style.backgroundColor = 'transparent';
+    // sortClicked = false;
+    document.querySelectorAll('.list').forEach((list, i) => {
+      list.style.backgroundColor = 'transparent';
+      if (i === currentListIndex) list.style.backgroundColor = '#e4e4ea6d';
+    });
   }
 });
 
 /////////////////////////////////////////////////
 // TASK INPUT AND ADDING NEW TASKS DONE
 /////////////////////////////////////////////////
-const addTask = function () {
-  createNewTaskHTML(currentUser, false, inputTask.value);
-  const currListIndex = currentUser.lists.findIndex(
-    list => list.listName === currentList
-  );
-  currentUser.lists[currListIndex].tasks.set(inputTask.value, false);
+const addNewTask = function (value) {
+  createNewTaskHTML({ value, isChecked: false });
+
+  currentUser.lists[currentListIndex].tasks.unshift({
+    value,
+    isChecked: false,
+  });
+
   inputTask.value = '';
 };
 
-containerInputTask.addEventListener('focusin', e => {
-  if (e.target.classList.contains('tasks__input')) {
-    btnAddTask.classList.add('isTyping');
-    inputTask.classList.add('isTyping');
-  }
+inputTask.addEventListener('focusin', () => {
+  btnAddTask.classList.add('isFocused');
+  inputTask.classList.add('isFocused');
 });
-
-containerInputTask.addEventListener('focusout', () => {
-  btnAddTask.classList.remove('isTyping');
-  inputTask.classList.remove('isTyping');
+inputTask.addEventListener('focusout', () => {
+  btnAddTask.classList.remove('isFocused');
+  inputTask.classList.remove('isFocused');
 });
-
 inputTask.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
-    // Prevent going to the next line
-    e.preventDefault();
-
-    if (e.target.value === '') {
-      inputTask.blur();
-    } else {
-      addTask();
-      inputTask.blur();
-    }
-  }
-});
-
-btnAddTask.addEventListener('click', e => {
-  if (e.target.parentElement.querySelector('.tasks__input').value !== '') {
-    addTask();
-  } else {
+    // Prevent from going to the next line
+    // e.preventDefault();
+    if (e.target.value !== '') addNewTask(e.target.value);
     inputTask.blur();
   }
 });
 
+btnAddTask.addEventListener('click', () => {
+  if (inputTask.value !== '') addNewTask(inputTask.value);
+  inputTask.blur();
+});
+
 /////////////////////////////////////////////////
-// TASKS CONTAINER AND CHECKING/DELETING TASKS DONE
+// CHECKING + DELETING TASKS
 /////////////////////////////////////////////////
-let isMoreClicked = true;
+let btnMoreClicked = false;
+
+const toggleMoreMenu = function (btnEl) {
+  btnMoreClicked = !btnMoreClicked;
+  if (btnMoreClicked) {
+    btnEl.querySelector('.task__options').classList.add('show');
+  } else {
+    btnEl.querySelector('.task__options').classList.remove('show');
+  }
+};
+
 containerTasks.addEventListener('click', e => {
-  let currentListIndex = currentUser.lists.findIndex(
-    list => list.listName === currentList
-  );
+  const taskEl = e.target.closest('.task');
+  const taskText = taskEl.querySelector('p').innerText;
 
   // Checkbox click
   if (e.target.classList.contains('task__checkbox')) {
-    const clickedCheckbox = e.target;
-    clickedCheckbox.dataset.checks++;
-    if (clickedCheckbox.dataset.checks % 2 === 0) {
-      // checked
-      clickedCheckbox.parentElement.style.textDecorationColor = 'transparent';
-      clickedCheckbox.classList.remove('checked');
-      currentUser.lists[currentListIndex].tasks.set(
-        clickedCheckbox.closest('.task').innerText.split('\n')[0],
-        false
-      );
+    const checkboxEl = e.target;
+
+    let isChecked = checkboxEl.dataset.checked === 'false' ? true : false;
+    checkboxEl.dataset.checked = `${isChecked}`;
+
+    // Change styles
+    taskEl.querySelector('p').style.textDecorationColor = isChecked
+      ? 'black'
+      : 'transparent';
+    isChecked
+      ? checkboxEl.classList.add('checked')
+      : checkboxEl.classList.remove('checked');
+
+    // Hide from the lists
+    if (currentListIndex !== 0) {
+      currentUser.lists[currentListIndex].tasks.forEach(task => {
+        if (task.value === taskText) task.isChecked = isChecked ? true : false;
+      });
     } else {
-      // not checked
-      clickedCheckbox.parentElement.style.textDecorationColor = 'black';
-      clickedCheckbox.classList.add('checked');
-      currentUser.lists[currentListIndex].tasks.set(
-        clickedCheckbox.closest('.task').innerText.split('\n')[0],
-        true
-      );
+      currentUser.lists.forEach(list => {
+        const taskIndex = list.tasks.findIndex(task => task.value === taskText);
+        if (taskIndex !== -1)
+          list.tasks[taskIndex].isChecked = isChecked ? true : false;
+      });
     }
+
+    toggleDisplayCompletedTasks();
   }
 
   // More button click
-  if (e.target.classList.contains('task__more')) {
-    const clickedMoreBtn = e.target;
-    if (isMoreClicked) {
-      clickedMoreBtn.querySelector('.task__options').classList.add('show');
-      isMoreClicked = false;
-    } else {
-      clickedMoreBtn.querySelector('.task__options').classList.remove('show');
-      isMoreClicked = true;
-    }
-  }
+  if (e.target.classList.contains('task__more')) toggleMoreMenu(e.target);
 
   // Delete button click
   if (e.target.classList.contains('task__btn--delete')) {
-    const clickedDeleteBtn = e.target;
-    const textTask = clickedDeleteBtn.closest('.task').innerText.split('\n')[0];
+    // Delete from the lists
+    currentUser.lists.forEach(list => {
+      const taskIndex = list.tasks.findIndex(task => task.value === taskText);
+      if (taskIndex !== -1) list.tasks.splice(taskIndex, 1);
+    });
 
-    // Delete the task from the current list object
-    currentUser.lists[currentListIndex].tasks.delete(textTask);
-    clickedDeleteBtn.closest('.task').remove();
-    clickedDeleteBtn.parentElement.classList.remove('show');
-    isMoreClicked = true;
+    toggleMoreMenu(e.target.closest('.task__more'));
+    displayTasks(currentList);
   }
 });
 
 /////////////////////////////////////////////////
-// HIDE COMPLETED TASKS/ ALL DONE
+// HIDE/SHOW COMPLETED TASKS DONE
 /////////////////////////////////////////////////
-let sortClicked = false;
-const btnCompleted = document.querySelector('.circle');
-btnCompleted.addEventListener('click', e => {
-  if (!sortClicked) {
-    Array.from(containerTasks.children).forEach(child => {
+const btnHideCompleted = document.querySelector('.circle');
+let hideClicked = false;
+
+btnHideCompleted.addEventListener('click', () => {
+  hideClicked = !hideClicked;
+  toggleDisplayCompletedTasks();
+});
+
+const toggleDisplayCompletedTasks = function () {
+  if (hideClicked) {
+    Array.from(containerTasks.children, child => {
       child.querySelector('.task__checkbox').classList.contains('checked')
         ? (child.style.display = 'none')
         : (child.style.display = 'flex');
     });
-    btnCompleted.style.backgroundColor = 'black';
-    sortClicked = !sortClicked;
+    btnHideCompleted.style.backgroundColor = 'black';
   } else {
-    Array.from(containerTasks.children).forEach(child => {
-      child.style.display = 'flex';
-    });
-    btnCompleted.style.backgroundColor = 'transparent';
-    sortClicked = !sortClicked;
+    Array.from(
+      containerTasks.children,
+      child => (child.style.display = 'flex')
+    );
+    btnHideCompleted.style.backgroundColor = 'transparent';
   }
-});
-
-// localstorage TODO
+};

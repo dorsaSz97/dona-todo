@@ -1,4 +1,5 @@
 @use 'functions' as *;
+// @use 'abstracts' as *;
 
 // DONE
 .app {
@@ -9,7 +10,12 @@
   height: 90%;
   padding: rem(7);
   border-radius: rem(18);
-  background-image: linear-gradient(#008bff33, #1d00ff52);
+  box-shadow: 0px 0px 15px 0px #00000026;
+  background-image: linear-gradient(rgb(0 139 255 / 8%), rgb(30 0 255 / 15%));
+
+  // @include breakpoint-down(large) {
+  //   width: 90%;
+  // }
 }
 
 // DONE
@@ -21,6 +27,13 @@
   background-color: #ffffff;
   overflow: scroll;
 
+  // @include breakpoint-down(large) {
+  //   width: 33%;
+  //   padding: rem(28);
+  // }
+  // @include breakpoint-down(small) {
+  //   display: none;
+  // }
   .lists {
     display: flex;
     flex-direction: column;
@@ -83,6 +96,14 @@
   padding: 2rem;
   padding-right: 6rem;
   overflow: hidden;
+
+  // @include breakpoint-down(large) {
+  //   padding-right: 3rem;
+  // }
+  // @include breakpoint-down(medium) {
+  //   margin-inline: auto;
+  //   width: 90%;
+  // }
 }
 
 .header {
@@ -118,7 +139,7 @@
     color: #818489;
     transition: all 0.4s;
 
-    &.isTyping {
+    &.isFocused {
       background-color: #ffffff;
       color: #313031;
     }
@@ -135,7 +156,7 @@
     visibility: hidden;
     transition: all 0.4s;
 
-    &.isTyping {
+    &.isFocused {
       opacity: 1;
       pointer-events: all;
       visibility: visible;
